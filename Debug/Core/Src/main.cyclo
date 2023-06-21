@@ -1,0 +1,14 @@
+main.c:88:5:main	6
+main.c:178:6:SystemClock_Config	4
+main.c:239:13:MX_I2C1_Init	4
+main.c:287:13:MX_TIM2_Init	4
+main.c:332:13:MX_USART1_UART_Init	2
+main.c:367:13:MX_USART2_UART_Init	2
+main.c:402:13:MX_GPIO_Init	1
+main.c:438:6:HAL_UART_RxCpltCallback	1
+main.c:445:6:instruct_and_read	2
+main.c:469:6:read_gyro	2
+main.c:485:13:calibration	4
+main.c:528:6:send_data	2
+main.c:569:6:HAL_TIM_PeriodElapsedCallback	1
+main.c:578:6:Error_Handler	1
