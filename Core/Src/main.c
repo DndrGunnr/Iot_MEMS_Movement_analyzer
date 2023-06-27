@@ -67,11 +67,17 @@ static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 static void calibration(OFFSET_ACCEL_t * offset_accel, OFFSET_ACCEL_t * offset_gyro);
 void send_data();
+//used to calculate acceleration not directed on a particular axis
+float module(float, float, float);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 char string[1024]="\0";
+//to sum on top of accelerometer measurement
+#define OFFX (-0.02)
+#define OFFY 0.008
+#define OFFZ 0.02
 OFFSET_ACCEL_t offset_accel;
 OFFSET_ACCEL_t offset_gyro;
 
@@ -133,23 +139,6 @@ int main(void)
   //initialize MPU6050
 
   while (MPU6050_Init(&hi2c1) == 1);
-
-  //calibrazione del sensore accelerometro/giroscopio
-  calibration(&offset_accel, &offset_gyro);
-
-  sprintf(string, "accel:\r\noffset_x %f\n\r", offset_accel.offset_x);
-  HAL_UART_Transmit(&huart2, string, strlen(string), 1000);
-  sprintf(string, "offset_y %f\n\r", offset_accel.offset_y);
-  HAL_UART_Transmit(&huart2, string, strlen(string), 1000);
-  sprintf(string, "offset_z %f\n\r", offset_accel.offset_z);
-  HAL_UART_Transmit(&huart2, string, strlen(string), 1000);
-
-  sprintf(string, "gyro:\r\noffset_x %f\n\r", offset_gyro.offset_x);
-  HAL_UART_Transmit(&huart2, string, strlen(string), 1000);
-  sprintf(string, "offset_y %f\n\r", offset_gyro.offset_y);
-  HAL_UART_Transmit(&huart2, string, strlen(string), 1000);
-  sprintf(string, "offset_z %f\n\r\r\n", offset_gyro.offset_z);
-  HAL_UART_Transmit(&huart2, string, strlen(string), 1000);
 
   /* USER CODE END 2 */
 
@@ -528,6 +517,13 @@ static void calibration(OFFSET_ACCEL_t * offset_accel, OFFSET_ACCEL_t * offset_g
 
 }
 
+float module(float acc_x, float acc_y, float acc_z){
+
+	return sqrt(pow(acc_x+OFFX,2)+pow(acc_y+OFFY,2)+pow(acc_z+OFFZ,2));
+}
+
+
+
 void send_data() {
 #ifdef TIMING
 	unsigned int tick = HAL_GetTick();
@@ -535,28 +531,20 @@ void send_data() {
 	MPU6050_Read_All(&hi2c1, &MPU6050);
 	char mybuffer[1000];
 
-//	sprintf(string, "Ax %f\n\r", MPU6050.Ax + offset_accel.offset_x);
-//	Wifi_Transmit(0, strlen(string),(char *)string);
-//
-//	sprintf(string, "Ay %f\n\r", MPU6050.Ay + offset_accel.offset_y);
-//	Wifi_Transmit(0, strlen(string),(char *)string);
-//
-//	sprintf(string, "Az %f\n\r", MPU6050.Az + offset_accel.offset_z);
-//	Wifi_Transmit(0, strlen(string),(char *)string);
-//
-//	sprintf(string, "Gx %f\n\r", MPU6050.Gx + offset_gyro.offset_x);
-//	Wifi_Transmit(0, strlen(string),(char *)string);
-//
-//	sprintf(string, "Gy %f\n\r", MPU6050.Gy + offset_gyro.offset_y);
-//	Wifi_Transmit(0, strlen(string),(char *)string);
-//
-//	sprintf(string, "Gz %f\n\r\r\n", MPU6050.Gz + offset_gyro.offset_z);
-//	Wifi_Transmit(0, strlen(string),(char *)string);
+	float mod;
 
-	sprintf(mybuffer, "Ax %f\n\rAy %f\n\rAz %f\n\rGx %f\n\rGy %f\n\rGz %f\n\r\n\r",
-			MPU6050.Ax + offset_accel.offset_x, MPU6050.Ay + offset_accel.offset_y, MPU6050.Az + offset_accel.offset_z,
-			MPU6050.Gx + offset_gyro.offset_x, MPU6050.Gy + offset_gyro.offset_y, MPU6050.Gz + offset_gyro.offset_z);
-	Wifi_Transmit(0, strlen(mybuffer), mybuffer);
+	mod=module(MPU6050.Ax,MPU6050.Ay,MPU6050.Az);
+
+	if(mod>=2){
+		sprintf(mybuffer, "Attenzione accelerazione >2g :  = %fg \n\r", mod);
+		Wifi_Transmit(0, strlen(mybuffer), mybuffer);
+	}
+	else{
+		sprintf(mybuffer, "Accelerazione nella norma (<2g) : =%fg \n\r",mod);
+		Wifi_Transmit(0, strlen(mybuffer), mybuffer);
+	}
+
+
 #ifdef TIMING
 	interval += (HAL_GetTick() - tick);
 	if (++measures >= 100) {
