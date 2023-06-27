@@ -130,10 +130,11 @@ int main(void)
   Wifi_TcpIp_StartTcpConnection(0,ACCSESS_POINT_IP,PORT_AP,10);
 
   //initialize MPU6050
+
   while (MPU6050_Init(&hi2c1) == 1);
 
   //calibrazione del sensore accelerometro/giroscopio
-  //calibration(&offset_accel, &offset_gyro);
+  calibration(&offset_accel, &offset_gyro);
 
   sprintf(string, "accel:\r\noffset_x %f\n\r", offset_accel.offset_x);
   HAL_UART_Transmit(&huart2, string, strlen(string), 1000);

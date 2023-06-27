@@ -6,8 +6,8 @@
 #define TCP 2
 
 //wifi parameters note
-#define SSID_W "FURCIO-LAPTOP"
-#define PASSWD_W "187g6Y7/"
+#define SSID_W "EnryPc"
+#define PASSWD_W "4%a3O975"
 #define ACCSESS_POINT_IP "192.168.137.1"
 #define PORT_AP 80
 
@@ -16,8 +16,8 @@
 // PARTIAL TCP	23.8 ms | 110 ms
 // TCP			44.0 ms | 200 ms
 
-#define PROTOCOL UDP
-#define TIMING
+#define PROTOCOL PARTIAL_TCP
+//#define TIMING
 
 #if PROTOCOL == UDP
 #define Wifi_Transmit(index, length, data) Wifi_TcpIp_SendData_Udp(index, length, data)

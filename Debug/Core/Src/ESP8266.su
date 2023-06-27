@@ -38,7 +38,7 @@
 ../Core/Src/ESP8266.c:828:7:Wifi_TcpIp_Close	32	static
 ../Core/Src/ESP8266.c:850:7:Wifi_TcpIp_SetEnableTcpServer	32	static
 ../Core/Src/ESP8266.c:883:7:Wifi_TcpIp_SetDisableTcpServer	32	static
-../Core/Src/ESP8266.c:902:7:Wifi_TcpIp_SendDataUdp	32	static
-../Core/Src/ESP8266.c:932:7:Wifi_TcpIp_SendDataTcp_org	32	static
-../Core/Src/ESP8266.c:960:7:Wifi_TcpIp_SendDataRealUdp	24	static
+../Core/Src/ESP8266.c:902:7:Wifi_TcpIp_SendData_PartialTcp	32	static
+../Core/Src/ESP8266.c:932:7:Wifi_TcpIp_SendData_Tcp	32	static
+../Core/Src/ESP8266.c:960:7:Wifi_TcpIp_SendData_Udp	24	static
 ../Core/Src/ESP8266.c:982:6:Wifi_Echo_off	24	static
