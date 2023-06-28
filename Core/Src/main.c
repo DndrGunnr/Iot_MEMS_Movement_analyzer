@@ -533,7 +533,7 @@ void send_data() {
 
 	float mod;
 
-	mod=module(MPU6050.Ax,MPU6050.Ay,MPU6050.Az);
+	/*mod=module(MPU6050.Ax,MPU6050.Ay,MPU6050.Az);
 
 	if(mod>=2){
 		sprintf(mybuffer, "Attenzione accelerazione >2g :  = %fg \n\r", mod);
@@ -542,7 +542,14 @@ void send_data() {
 	else{
 		sprintf(mybuffer, "Accelerazione nella norma (<2g) : =%fg \n\r",mod);
 		Wifi_Transmit(0, strlen(mybuffer), mybuffer);
-	}
+	}*/
+
+	//kalman angles transmission
+	double kx=MPU6050.KalmanAngleX;
+	double ky=MPU6050.KalmanAngleY;
+	sprintf(mybuffer, "KalmanRoll = %lf ; KalmanPitch = %lf \n\r",kx,ky);
+			Wifi_Transmit(0, strlen(mybuffer), mybuffer);
+
 
 
 #ifdef TIMING
