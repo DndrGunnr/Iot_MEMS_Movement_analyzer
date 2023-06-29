@@ -66,16 +66,21 @@ static void MX_USART1_UART_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 static void calibration(OFFSET_ACCEL_t * offset_accel, OFFSET_ACCEL_t * offset_gyro);
-void send_data();
+void send_data(float);
 //function to calculate moving average
-float movingAverage(float[],int,float);
+float movingAverage(float[], int*, float);
 //used to calculate acceleration not directed on a particular axis
 float module(float, float, float);
+//used to initialize global variable
+void init();
+//used to process raw data
+void processing();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 char string[1024]="\0";
+float mAvg;
 //to sum on top of accelerometer measurement
 #define OFFX (-0.02)
 #define OFFY 0.008
@@ -83,6 +88,8 @@ char string[1024]="\0";
 #define NCAMP 10
 OFFSET_ACCEL_t offset_accel;
 OFFSET_ACCEL_t offset_gyro;
+float mAvgBuffer[NCAMP];
+int oldestBufferElement;
 
 
 #ifdef TIMING
@@ -107,6 +114,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+  init();
 
   /* USER CODE END Init */
 
@@ -145,6 +153,10 @@ int main(void)
   while (MPU6050_Init(&hi2c1) == 1);
 
   /* USER CODE END 2 */
+	//buffer to hold data from module measurement
+
+
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -155,6 +167,10 @@ int main(void)
 #endif
   while (1)
   {
+	#ifdef TIMING
+	  unsigned int tick = HAL_GetTick();
+	#endif
+
 #ifdef TIMING
 	  send_data();
 #else
@@ -526,11 +542,11 @@ float module(float acc_x, float acc_y, float acc_z){
 	return sqrt(pow(acc_x+OFFX,2)+pow(acc_y+OFFY,2)+pow(acc_z+OFFZ,2));
 }
 
-float movingAverage(float buffer[],int oldest, float newValue){
+float movingAverage(float buffer[],int* oldest, float newValue){
 	float sum=0;
-	buffer[oldest]=newValue;
-	oldest++;
-	oldest=oldest%NCAMP;
+	buffer[*oldest]=newValue;
+	*oldest=(*oldest+1)%NCAMP;
+
 	for(int i=0; i<NCAMP; i++)
 		sum+=buffer[i];
 	return sum/NCAMP;
@@ -538,38 +554,15 @@ float movingAverage(float buffer[],int oldest, float newValue){
 
 
 
-void send_data() {
-#ifdef TIMING
-	unsigned int tick = HAL_GetTick();
-#endif
-	//buffer to hold data from module measurement
-	float mAvgBuffer[NCAMP];
-	//all elements equal to zero
-	for(int i = 0; i<NCAMP; i++)
-		mAvgBuffer[i]=0;
-	int oldestBufferElement=0;
-	float mAvg;
-	MPU6050_Read_All(&hi2c1, &MPU6050);
+void send_data(float mAvg) {
+
 	char mybuffer[1000];
-	float mod;
-
-	mod=module(MPU6050.Ax,MPU6050.Ay,MPU6050.Az);
-
-	mAvg=movingAverage(mAvgBuffer,oldestBufferElement, mod);
-
-
-
-
-
-
 	if(mAvg>=1.5){
 		sprintf(mybuffer, "Attenzione accelerazione >1.5g :  = %fg \n\r", mAvg);
 		Wifi_Transmit(0, strlen(mybuffer), mybuffer);
 	}
-	else{
-		sprintf(mybuffer, "Accelerazione nella norma (<1.5g) : =%fg \n\r",mAvg);
-		Wifi_Transmit(0, strlen(mybuffer), mybuffer);
-	}
+
+
 
 
 #ifdef TIMING
@@ -584,8 +577,27 @@ void send_data() {
 #endif
 }
 
+void init(){
+	//all elements equal to zero
+	for(int i = 0; i<NCAMP; i++)
+		mAvgBuffer[i]=0;
+	oldestBufferElement=0;
+}
+
+void processing(){
+	MPU6050_Read_All(&hi2c1, &MPU6050);
+
+		float mod;
+
+		mod=module(MPU6050.Ax,MPU6050.Ay,MPU6050.Az);
+
+		mAvg=movingAverage(mAvgBuffer,&oldestBufferElement, mod);
+
+		send_data(mAvg);
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
-	send_data();
+	processing();
 }
 /* USER CODE END 4 */
 
