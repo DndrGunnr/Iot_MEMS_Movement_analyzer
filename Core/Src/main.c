@@ -67,6 +67,8 @@ static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 static void calibration(OFFSET_ACCEL_t * offset_accel, OFFSET_ACCEL_t * offset_gyro);
 void send_data();
+//function to calculate moving average
+float movingAverage(float[],int,float);
 //used to calculate acceleration not directed on a particular axis
 float module(float, float, float);
 /* USER CODE END PFP */
@@ -78,6 +80,7 @@ char string[1024]="\0";
 #define OFFX (-0.02)
 #define OFFY 0.008
 #define OFFZ 0.02
+#define NCAMP 10
 OFFSET_ACCEL_t offset_accel;
 OFFSET_ACCEL_t offset_gyro;
 
@@ -95,6 +98,7 @@ int measures = 0;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -522,25 +526,48 @@ float module(float acc_x, float acc_y, float acc_z){
 	return sqrt(pow(acc_x+OFFX,2)+pow(acc_y+OFFY,2)+pow(acc_z+OFFZ,2));
 }
 
+float movingAverage(float buffer[],int oldest, float newValue){
+	float sum=0;
+	buffer[oldest]=newValue;
+	oldest++;
+	oldest=oldest%NCAMP;
+	for(int i=0; i<NCAMP; i++)
+		sum+=buffer[i];
+	return sum/NCAMP;
+}
+
 
 
 void send_data() {
 #ifdef TIMING
 	unsigned int tick = HAL_GetTick();
 #endif
+	//buffer to hold data from module measurement
+	float mAvgBuffer[NCAMP];
+	//all elements equal to zero
+	for(int i = 0; i<NCAMP; i++)
+		mAvgBuffer[i]=0;
+	int oldestBufferElement=0;
+	float mAvg;
 	MPU6050_Read_All(&hi2c1, &MPU6050);
 	char mybuffer[1000];
-
 	float mod;
 
 	mod=module(MPU6050.Ax,MPU6050.Ay,MPU6050.Az);
 
-	if(mod>=2){
-		sprintf(mybuffer, "Attenzione accelerazione >2g :  = %fg \n\r", mod);
+	mAvg=movingAverage(mAvgBuffer,oldestBufferElement, mod);
+
+
+
+
+
+
+	if(mAvg>=1.5){
+		sprintf(mybuffer, "Attenzione accelerazione >1.5g :  = %fg \n\r", mAvg);
 		Wifi_Transmit(0, strlen(mybuffer), mybuffer);
 	}
 	else{
-		sprintf(mybuffer, "Accelerazione nella norma (<2g) : =%fg \n\r",mod);
+		sprintf(mybuffer, "Accelerazione nella norma (<1.5g) : =%fg \n\r",mAvg);
 		Wifi_Transmit(0, strlen(mybuffer), mybuffer);
 	}
 
