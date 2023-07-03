@@ -67,7 +67,7 @@ static void MX_TIM2_Init(void);
 static void calibration(OFFSET_ACCEL_t * offset_accel, OFFSET_ACCEL_t * offset_gyro);
 void send_data(float);
 //function to calculate moving average
-float movingAverage(float[], int*, float);
+float movingAverage(float);
 //used to calculate acceleration not directed on a particular axis
 float module(float, float, float);
 //used to initialize global variable
@@ -89,6 +89,7 @@ OFFSET_ACCEL_t offset_accel;
 OFFSET_ACCEL_t offset_gyro;
 float mAvgBuffer[NCAMP];
 int oldestBufferElement;
+float sum;
 
 
 #ifdef TIMING
@@ -547,14 +548,15 @@ float module(float acc_x, float acc_y, float acc_z){
 	return sqrt(pow(acc_x+OFFX,2)+pow(acc_y+OFFY,2)+pow(acc_z+OFFZ,2));
 }
 
-float movingAverage(float buffer[],int* oldest, float newValue){
-	float sum=0;
-	buffer[*oldest]=newValue;
-	*oldest=(*oldest+1)%NCAMP;
-
-	for(int i=0; i<NCAMP; i++)
-		sum+=buffer[i];
-	return sum/NCAMP;
+float movingAverage(float newValue){
+	//saving the new value in the buffer
+	mAvgBuffer[oldestBufferElement]=newValue;
+	//update index of next oldest element
+	oldestBufferElement=(oldestBufferElement+1)%NCAMP;
+	//add new contributions and remove oldest contribution
+	sum=sum+(newValue/NCAMP)-(mAvgBuffer[oldestBufferElement]/NCAMP);
+	//return moving average
+	return sum;
 }
 
 
@@ -596,7 +598,7 @@ void processing(){
 
 		mod=module(MPU6050.Ax,MPU6050.Ay,MPU6050.Az);
 
-		mAvg=movingAverage(mAvgBuffer,&oldestBufferElement, mod);
+		mAvg=movingAverage(mod);
 
 		send_data(mAvg);
 }
@@ -604,7 +606,7 @@ void processing(){
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_3, GPIO_PIN_SET);
 	processing();
-	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_3, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_3, GPIO_PIN_RESET);
 }
 /* USER CODE END 4 */
 
