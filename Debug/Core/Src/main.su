@@ -11,7 +11,7 @@
 ../Core/Src/main.c:503:13:calibration	240	static
 ../Core/Src/main.c:546:7:module	32	static
 ../Core/Src/main.c:551:7:movingAverage	16	static
-../Core/Src/main.c:564:6:send_data	1016	static
+../Core/Src/main.c:564:6:send_data	72	static
 ../Core/Src/main.c:587:6:init	16	static
 ../Core/Src/main.c:594:6:processing	24	static
 ../Core/Src/main.c:606:6:HAL_TIM_PeriodElapsedCallback	16	static

@@ -84,7 +84,7 @@ float mAvg;
 #define OFFX (-0.02)
 #define OFFY 0.008
 #define OFFZ 0.02
-#define NCAMP 10
+#define NCAMP 50
 OFFSET_ACCEL_t offset_accel;
 OFFSET_ACCEL_t offset_gyro;
 float mAvgBuffer[NCAMP];
@@ -308,7 +308,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 32;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 9999;
+  htim2.Init.Period = 999;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -563,9 +563,9 @@ float movingAverage(float newValue){
 
 void send_data(float mAvg) {
 
-	char mybuffer[1000];
-	if(mAvg>=1.5){
-		sprintf(mybuffer, "Attenzione accelerazione >1.5g :  = %fg \n\r", mAvg);
+	char mybuffer[50];
+	if(mAvg>=2.2){
+		sprintf(mybuffer,"ACCELERAZIONE ANOMALA: %f\n\r", mAvg);
 		Wifi_Transmit(0, strlen(mybuffer), mybuffer);
 	}
 
