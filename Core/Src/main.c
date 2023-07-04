@@ -65,21 +65,25 @@ static void MX_USART1_UART_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 static void calibration(OFFSET_ACCEL_t * offset_accel, OFFSET_ACCEL_t * offset_gyro);
-void send_data(float);
+void send_data();
 //function to calculate moving average
 float movingAverage(float);
 //used to calculate acceleration not directed on a particular axis
 float module(float, float, float);
+//used to process angle checks
+int angleCheck(float, float);
 //used to initialize global variable
 void init();
 //used to process raw data
 void processing();
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 char string[1024]="\0";
 float mAvg;
+int bAngle;
 //to sum on top of accelerometer measurement
 #define OFFX (-0.02)
 #define OFFY 0.008
@@ -548,6 +552,15 @@ float module(float acc_x, float acc_y, float acc_z){
 	return sqrt(pow(acc_x+OFFX,2)+pow(acc_y+OFFY,2)+pow(acc_z+OFFZ,2));
 }
 
+int angleCheck(float roll, float pitch){
+	//check if kalman angles are in normal ranges
+	if(roll<10 && roll>-10)
+		if(pitch<110 && pitch>90)
+			return 0;
+	else
+		return 1;
+}
+
 float movingAverage(float newValue){
 	//saving the new value in the buffer
 	mAvgBuffer[oldestBufferElement]=newValue;
@@ -561,12 +574,18 @@ float movingAverage(float newValue){
 
 
 
-void send_data(float mAvg) {
+void send_data() {
 
 	char mybuffer[50];
 	if(mAvg>=2.2){
-		sprintf(mybuffer,"ACCELERAZIONE ANOMALA: %f\n\r", mAvg);
-		Wifi_Transmit(0, strlen(mybuffer), mybuffer);
+		if(bAngle){
+			sprintf(mybuffer,"ACCELERAZIONE E INCLINAZIONE ANOMALA :%.2fg ,%.2f X, %.2f Y\n\r", mAvg, MPU6050.KalmanAngleX, MPU6050.KalmanAngleY);
+			Wifi_Transmit(0, strlen(mybuffer), mybuffer);
+		}
+		else{
+			sprintf(mybuffer,"ACCELERAZIONE ANOMALA :%.2f \n\r", mAvg);
+			Wifi_Transmit(0, strlen(mybuffer), mybuffer);
+		}
 	}
 
 
@@ -598,9 +617,11 @@ void processing(){
 
 		mod=module(MPU6050.Ax,MPU6050.Ay,MPU6050.Az);
 
+		bAngle=angleCheck(MPU6050.KalmanAngleX,MPU6050.KalmanAngleY);
+
 		mAvg=movingAverage(mod);
 
-		send_data(mAvg);
+		send_data();
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
