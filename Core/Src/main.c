@@ -576,7 +576,7 @@ float movingAverage(float newValue){
 
 void send_data() {
 
-	char mybuffer[50];
+	char mybuffer[100];
 	if(mAvg>=2.2){
 		if(bAngle){
 			sprintf(mybuffer,"ACCELERAZIONE E INCLINAZIONE ANOMALA :%.2fg ,%.2f X, %.2f Y\n\r", mAvg, MPU6050.KalmanAngleX, MPU6050.KalmanAngleY);
