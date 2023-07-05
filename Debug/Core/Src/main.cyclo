@@ -11,9 +11,9 @@ main.c:491:6:read_gyro	2
 main.c:507:13:calibration	4
 main.c:550:7:module	1
 main.c:555:5:angleCheck	5
-main.c:564:7:movingAverage	1
-main.c:577:6:send_data	3
-main.c:606:6:init	2
-main.c:613:6:processing	1
-main.c:627:6:HAL_TIM_PeriodElapsedCallback	1
-main.c:638:6:Error_Handler	1
+main.c:565:7:movingAverage	1
+main.c:578:6:send_data	3
+main.c:607:6:init	2
+main.c:614:6:processing	1
+main.c:628:6:HAL_TIM_PeriodElapsedCallback	1
+main.c:639:6:Error_Handler	1

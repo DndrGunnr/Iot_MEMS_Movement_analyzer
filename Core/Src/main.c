@@ -553,12 +553,13 @@ float module(float acc_x, float acc_y, float acc_z){
 }
 
 int angleCheck(float roll, float pitch){
+	int alarm=0;
 	//check if kalman angles are in normal ranges
-	if(roll<10 && roll>-10)
-		if(pitch<110 && pitch>90)
-			return 0;
-	else
-		return 1;
+	if(roll<-60 || roll>60)
+		alarm=1;
+	else if(pitch<-60 || pitch>60)
+		alarm=1;
+	return alarm;
 }
 
 float movingAverage(float newValue){
