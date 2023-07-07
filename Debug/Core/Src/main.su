@@ -12,7 +12,7 @@
 ../Core/Src/main.c:550:7:module	32	static
 ../Core/Src/main.c:555:5:angleCheck	24	static
 ../Core/Src/main.c:565:7:movingAverage	16	static
-../Core/Src/main.c:578:6:send_data	144	static
+../Core/Src/main.c:578:6:send_data	112	static
 ../Core/Src/main.c:607:6:init	16	static
 ../Core/Src/main.c:614:6:processing	24	static
 ../Core/Src/main.c:628:6:HAL_TIM_PeriodElapsedCallback	16	static

@@ -555,9 +555,9 @@ float module(float acc_x, float acc_y, float acc_z){
 int angleCheck(float roll, float pitch){
 	int alarm=0;
 	//check if kalman angles are in normal ranges
-	if(roll<-60 || roll>60)
+	if(roll<-45 || roll>45)
 		alarm=1;
-	else if(pitch<-60 || pitch>60)
+	else if(pitch<-45 || pitch>45)
 		alarm=1;
 	return alarm;
 }
@@ -580,11 +580,11 @@ void send_data() {
 	char mybuffer[100];
 	if(mAvg>=2.2){
 		if(bAngle){
-			sprintf(mybuffer,"ACCELERAZIONE E INCLINAZIONE ANOMALA :%.2fg ,%.2f X, %.2f Y\n\r", mAvg, MPU6050.KalmanAngleX, MPU6050.KalmanAngleY);
+			sprintf(mybuffer,"Possibile caduta, probabilità ALTA :%.2fg \n\r", mAvg);
 			Wifi_Transmit(0, strlen(mybuffer), mybuffer);
 		}
 		else{
-			sprintf(mybuffer,"ACCELERAZIONE ANOMALA :%.2f \n\r", mAvg);
+			sprintf(mybuffer,"Possibile caduta, probabilità BASSA :%.2f \n\r", mAvg);
 			Wifi_Transmit(0, strlen(mybuffer), mybuffer);
 		}
 	}
